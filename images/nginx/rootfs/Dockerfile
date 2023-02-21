@@ -53,8 +53,9 @@ RUN apk update \
     nano \
     tzdata \
   && ln -s /usr/local/nginx/sbin/nginx /sbin/nginx \
+  && addgroup www-data \
   && adduser -S -D -H -u 101 -h /usr/local/nginx \
-    -s /sbin/nologin www-data www-data \
+    -s /sbin/nologin -G www-data -g www-data www-data \
   && bash -eu -c ' \
   writeDirs=( \
     /var/log/nginx \
@@ -67,7 +68,7 @@ RUN apk update \
   ); \
   for dir in "${writeDirs[@]}"; do \
     mkdir -p ${dir}; \
-    chown -R www-data ${dir}; \
+    chown -R www-data.www-data ${dir}; \
   done'
 
 EXPOSE 80 443
