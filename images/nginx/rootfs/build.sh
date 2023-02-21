@@ -17,6 +17,7 @@
 set -o errexit
 set -o nounset
 set -o pipefail
+set -x
 
 export NGINX_VERSION=1.19.9
 
@@ -103,7 +104,7 @@ export LUA_RESTY_CACHE=0.11
 # Check for recent changes: https://github.com/openresty/lua-resty-core/compare/v0.1.22...master
 export LUA_RESTY_CORE=0.1.22
 
-# Check for recent changes: https://github.com/cloudflare/lua-resty-cookie/compare/v0.1.0...master
+# Check for recent changes: https://gimusing_rosalindthub.com/cloudflare/lua-resty-cookie/compare/v0.1.0...master
 export LUA_RESTY_COOKIE_VERSION=303e32e512defced053a6484bc0745cf9dc0d39e
 
 # Check for recent changes: https://github.com/openresty/lua-resty-dns/compare/v0.22...master
@@ -143,9 +144,12 @@ if [[ ${ARCH} == "s390x" ]]; then
   export LUA_NGX_VERSION=0.10.15
   export LUA_STREAM_NGX_VERSION=0.0.7
 fi
+if [[ ${ARCH} == "loongarch64" ]]; then
+    export LUAJIT_VERSION=2.1-agentzh-loongarch64
+fi
 
 export USE_OPENTELEMETRY=true
-if [[ ${ARCH} == "s390x" ]] || [[ ${ARCH} == "armv7l" ]]; then
+if [[ ${ARCH} == "s390x" ]] || [[ ${ARCH} == "armv7l" || ${ARCH} == "loongarch64" ]]; then
   export USE_OPENTELEMETRY=false
 fi
 
@@ -270,6 +274,9 @@ get_src a92c9ee6682567605ece55d4eed5d1d54446ba6fba748cff0a2482aea5713d5f \
 if [[ ${ARCH} == "s390x" ]]; then
 get_src 266ed1abb70a9806d97cb958537a44b67db6afb33d3b32292a2d68a2acedea75 \
         "https://github.com/openresty/luajit2/archive/$LUAJIT_VERSION.tar.gz"
+elif [[ ${ARCH} == "loongarch64" ]]; then
+get_src 9fa779937c080e89d6cdd6bacc910d2672a68165b9bb75a02eb8aedb8dbd8057 \
+        "https://github.com/loongson/luajit2/archive/refs/heads/v2.1-agentzh-loongarch64.tar.gz"
 else
 get_src 1ee6dad809a5bb22efb45e6dac767f7ce544ad652d353a93d7f26b605f69fe3f \
         "https://github.com/openresty/luajit2/archive/v$LUAJIT_VERSION.tar.gz"
@@ -782,11 +789,11 @@ writeDirs=( \
   /var/log/nginx \
 );
 
-adduser -S -D -H -u 101 -h /usr/local/nginx -s /sbin/nologin -G www-data -g www-data www-data
+adduser -S -D -H -u 101 -h /usr/local/nginx -s /sbin/nologin -g www-data www-data
 
 for dir in "${writeDirs[@]}"; do
   mkdir -p ${dir};
-  chown -R www-data.www-data ${dir};
+  chown -R www-data ${dir};
 done
 
 rm -rf /etc/nginx/owasp-modsecurity-crs/.git

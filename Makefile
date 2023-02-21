@@ -77,7 +77,8 @@ clean-image: ## Removes local image
 
 .PHONY: build
 build:  ## Build ingress controller, debug tool and pre-stop hook.
-	@build/run-in-docker.sh \
+#	@build/run-in-docker.sh \
+	@build/run-in-docker.sh 
 		PKG=$(PKG) \
 		ARCH=$(ARCH) \
 		COMMIT_SHA=$(COMMIT_SHA) \
