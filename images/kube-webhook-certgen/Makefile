@@ -20,7 +20,7 @@ DIR:=$(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 INIT_BUILDX=$(DIR)/../../hack/init-buildx.sh
 
 TAG ?=v$(shell date +%m%d%Y)-$(shell git rev-parse --short HEAD)
-REGISTRY ?= local
+REGISTRY ?= cr.loongnix.cn/ingress-nginx
 
 IMAGE = $(REGISTRY)/kube-webhook-certgen
 
@@ -28,12 +28,12 @@ IMAGE = $(REGISTRY)/kube-webhook-certgen
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
 # build with buildx
-PLATFORMS?=linux/amd64,linux/arm,linux/arm64,linux/s390x
+PLATFORMS?=linux/loong64
 OUTPUT=
 PROGRESS=plain
 
-build: ensure-buildx
-	docker buildx build \
+build: 
+	docker build \
 		--platform=${PLATFORMS} $(OUTPUT) \
 		--progress=$(PROGRESS) \
 		--pull \
