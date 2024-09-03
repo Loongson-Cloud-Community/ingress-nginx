@@ -22,24 +22,17 @@ INIT_BUILDX=$(DIR)/../../hack/init-buildx.sh
 
 # 0.0.0 shouldn't clobber any released builds
 SHORT_SHA ?=$(shell git rev-parse --short HEAD)
-TAG ?=v$(shell date +%Y%m%d)-$(SHORT_SHA)
+TAG ?=v20231208-4c39e6acc
 
-REGISTRY ?= gcr.io/k8s-staging-ingress-nginx
+REGISTRY ?= cr.loongnix.cn/ingress-nginx
 
 IMAGE = $(REGISTRY)/nginx
-
-# required to enable buildx
-export DOCKER_CLI_EXPERIMENTAL=enabled
-
-# build with buildx
-PLATFORMS?=linux/amd64,linux/arm,linux/arm64,linux/s390x
 OUTPUT=
-PROGRESS=plain
-build: ensure-buildx
-	docker buildx build \
-		--platform=${PLATFORMS} $(OUTPUT) \
-		--progress=$(PROGRESS) \
+build: 
+	docker build \
 		--pull \
+		--build-arg http_proxy=$(http_proxy) \
+		--build-arg https_proxy=$(https_proxy) \
 		--tag $(IMAGE):$(TAG) rootfs
 
 # push the cross built image

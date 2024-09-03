@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FROM alpine:3.19.0 as builder
+FROM cr.loongnix.cn/library/alpine:3.11 as builder
 
 COPY . /
 
@@ -21,11 +21,11 @@ RUN apk update \
   && /build.sh
 
 # Use a multi-stage build
-FROM alpine:3.19.0
+FROM cr.loongnix.cn/library/alpine:3.11
 
 ENV PATH=$PATH:/usr/local/luajit/bin:/usr/local/nginx/sbin:/usr/local/nginx/bin
 
-ENV LUA_PATH="/usr/local/share/luajit-2.1.0-beta3/?.lua;/usr/local/share/lua/5.1/?.lua;/usr/local/lib/lua/?.lua;;"
+ENV LUA_PATH="/usr/local/share/luajit-2.1/?.lua;/usr/local/share/lua/5.1/?.lua;/usr/local/lib/lua/?.lua;;"
 ENV LUA_CPATH="/usr/local/lib/lua/?/?.so;/usr/local/lib/lua/?.so;;"
 
 COPY --from=builder /usr/local /usr/local
@@ -49,6 +49,7 @@ RUN apk update \
   dumb-init \
   tzdata \
   && ln -s /usr/local/nginx/sbin/nginx /sbin/nginx \
+  && addgroup www-data \
   && adduser -S -D -H -u 101 -h /usr/local/nginx \
   -s /sbin/nologin -G www-data -g www-data www-data \
   && bash -eu -c ' \

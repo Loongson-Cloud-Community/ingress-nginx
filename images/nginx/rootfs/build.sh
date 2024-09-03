@@ -187,7 +187,8 @@ apk add \
   unzip \
   dos2unix \
   yaml-cpp \
-  coreutils
+  coreutils \
+  samurai
 
 mkdir -p /etc/nginx
 
@@ -254,6 +255,9 @@ get_src a92c9ee6682567605ece55d4eed5d1d54446ba6fba748cff0a2482aea5713d5f \
 if [[ ${ARCH} == "s390x" ]]; then
 get_src 266ed1abb70a9806d97cb958537a44b67db6afb33d3b32292a2d68a2acedea75 \
         "https://github.com/openresty/luajit2/archive/$LUAJIT_VERSION.tar.gz"
+elif [[ ${ARCH} == "loongarch64" ]]; then
+git clone -b v2.1-agentzh-larch64 --depth=1 https://github.com/loongson/luajit2.git
+git clone -b v1.1.0 --depth 1 https://github.com/google/brotli.git
 else
 get_src 77bbcbb24c3c78f51560017288f3118d995fe71240aa379f5818ff6b166712ff \
         "https://github.com/openresty/luajit2/archive/v$LUAJIT_VERSION.tar.gz"
@@ -328,7 +332,11 @@ export LUAJIT_LIB=/usr/local/lib
 export LUA_LIB_DIR="$LUAJIT_LIB/lua"
 export LUAJIT_INC=/usr/local/include/luajit-2.1
 
-cd "$BUILD_PATH/luajit2-$LUAJIT_VERSION"
+if [[ ${ARCH} == "loongarch64" ]]; then
+	cd "$BUILD_PATH/luajit2"
+else
+	cd "$BUILD_PATH/luajit2-$LUAJIT_VERSION"
+fi
 make CCDEBUG=-g
 make install
 
@@ -339,6 +347,17 @@ cd "$BUILD_PATH"
 
 # Git tuning
 git config --global --add core.compression -1
+
+if [[ ${ARCH} == "loongarch64" ]]; then
+	cd "$BUILD_PATH/brotli"
+	cmake -B build -G Ninja \
+                -DCMAKE_BUILD_TYPE=None \
+                -DCMAKE_INSTALL_PREFIX=/usr \
+                -DBUILD_SHARED_LIBS=ON
+        cmake --build build
+
+	cmake --install build
+fi
 
 # build opentracing lib
 cd "$BUILD_PATH/opentracing-cpp-$OPENTRACING_CPP_VERSION"
@@ -729,6 +748,7 @@ writeDirs=( \
   /var/log/nginx \
 );
 
+addgroup www-data
 adduser -S -D -H -u 101 -h /usr/local/nginx -s /sbin/nologin -G www-data -g www-data www-data
 
 for dir in "${writeDirs[@]}"; do
