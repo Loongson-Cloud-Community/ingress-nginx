@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-FROM cr.loongnix.cn/library/alpine:3.11 as builder
+FROM lcr.loongnix.cn/library/alpine:3.21 as builder
 
 COPY . /
 
@@ -23,7 +23,7 @@ RUN apk update \
   && /build.sh
 
 # Use a multi-stage build
-FROM cr.loongnix.cn/library/alpine:3.11
+FROM lcr.loongnix.cn/library/alpine:3.21
 
 ENV PATH=$PATH:/usr/local/luajit/bin:/usr/local/nginx/sbin:/usr/local/nginx/bin
 
@@ -53,7 +53,6 @@ RUN apk update \
     nano \
     tzdata \
   && ln -s /usr/local/nginx/sbin/nginx /sbin/nginx \
-  && addgroup www-data \
   && adduser -S -D -H -u 101 -h /usr/local/nginx \
     -s /sbin/nologin -G www-data -g www-data www-data \
   && bash -eu -c ' \
@@ -68,7 +67,7 @@ RUN apk update \
   ); \
   for dir in "${writeDirs[@]}"; do \
     mkdir -p ${dir}; \
-    chown -R www-data.www-data ${dir}; \
+    chown -R www-data:www-data ${dir}; \
   done'
 
 EXPOSE 80 443

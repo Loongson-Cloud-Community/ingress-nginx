@@ -57,7 +57,7 @@ RUN bash -xeu -c ' \
   ); \
   for dir in "${writeDirs[@]}"; do \
     mkdir -p ${dir}; \
-    chown -R www-data.www-data ${dir}; \
+    chown -R www-data:www-data ${dir}; \
   done'
 
 RUN apk add --no-cache libcap \

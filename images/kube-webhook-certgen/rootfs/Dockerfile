@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM cr.loongnix.cn/library/golang:1.19 as builder
+FROM lcr.loongnix.cn/library/golang:1.23 as builder
 ARG BUILDPLATFORM
 ARG TARGETARCH
 
@@ -20,7 +20,7 @@ WORKDIR /workspace
 COPY . .
 RUN GOPROXY=https://goproxy.io CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build -a -o kube-webhook-certgen main.go
 
-FROM cr.loongnix.cn/library/alpine:3.11
+FROM lcr.loongnix.cn/library/alpine:3.21
 ARG BUILDPLATFORM
 ARG TARGETARCH
 WORKDIR /

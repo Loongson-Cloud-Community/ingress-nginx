@@ -275,7 +275,7 @@ if [[ ${ARCH} == "s390x" ]]; then
 get_src 266ed1abb70a9806d97cb958537a44b67db6afb33d3b32292a2d68a2acedea75 \
         "https://github.com/openresty/luajit2/archive/$LUAJIT_VERSION.tar.gz"
 elif [[ ${ARCH} == "loongarch64" ]]; then
-get_src 9fa779937c080e89d6cdd6bacc910d2672a68165b9bb75a02eb8aedb8dbd8057 \
+get_src 0ff773b45d86a20ade4f58de7be77d95e24a1cdc093e19b5bc82c6c9de7b39ea \
         "https://github.com/loongson/luajit2/archive/refs/heads/v2.1-agentzh-loongarch64.tar.gz"
 else
 get_src 1ee6dad809a5bb22efb45e6dac767f7ce544ad652d353a93d7f26b605f69fe3f \
@@ -609,6 +609,10 @@ Include /etc/nginx/owasp-modsecurity-crs/rules/RESPONSE-980-CORRELATION.conf
 Include /etc/nginx/owasp-modsecurity-crs/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf
 " > /etc/nginx/owasp-modsecurity-crs/nginx-modsecurity.conf
 
+# fix
+cd "$BUILD_PATH/ModSecurity-nginx-$MODSECURITY_VERSION"
+sed -i 's|ngx_feature_incs.*|ngx_feature_incs="#include <modsecurity/modsecurity.h>\n#include <stdio.h>"|g' config
+
 # build nginx
 cd "$BUILD_PATH/nginx-$NGINX_VERSION"
 
@@ -789,7 +793,7 @@ writeDirs=( \
   /var/log/nginx \
 );
 
-addgroup www-data
+#addgroup www-data
 adduser -S -D -H -u 101 -h /usr/local/nginx -s /sbin/nologin -G www-data -g www-data www-data
 
 for dir in "${writeDirs[@]}"; do
