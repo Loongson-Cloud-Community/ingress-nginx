@@ -64,6 +64,7 @@ POD_NAME="invalid-namespace"
 
 export TAG
 export IMAGE
+export GOPROXY="https://goproxy.cn"
 
 if [[ "${ARCH}" != "amd64" ]]; then
   echo -e "${BGREEN}Register ${RED}/usr/bin/qemu-ARCH-static${BGREEN} as the handler for binaries in multiple platforms${NC}"
