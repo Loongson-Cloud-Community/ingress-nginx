@@ -15,8 +15,13 @@
 # limitations under the License.
 
 set -o errexit
-set -o nounset
+# set -o nounset
 set -o pipefail
+set -x;
+
+# rm -rf /patches /third_patches
+# cp -r ./patches /patches
+# cp -r ./third_patches /third_patches
 
 export NGINX_VERSION=1.25.5
 
@@ -123,6 +128,11 @@ get_src()
 
   echo "Downloading $url"
 
+  if test -d "${BUILD_PATH}/${dest}" && ! test -z "$dest"; then
+    echo "Skip downloading ${BUILD_PATH}/${dest}"
+    return
+  fi
+
   curl -sSL "$url" -o "$f"
   # TODO: Reenable checksum verification but make it smarter
   # echo "$hash  $f" | sha256sum -c - || exit 10
@@ -196,7 +206,7 @@ cd "$BUILD_PATH"
 
 # download, verify and extract the source files
 get_src 66dc7081488811e9f925719e34d1b4504c2801c81dee2920e5452a86b11405ae \
-        "https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz"
+       "https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz"
 
 get_src aa961eafb8317e0eb8da37eb6e2c9ff42267edd18b56947384e719b85188f58b \
         "https://github.com/vision5/ngx_devel_kit/archive/$NDK_VERSION.tar.gz" "ngx_devel_kit"
@@ -231,8 +241,8 @@ get_src 01b715754a8248cc7228e0c8f97f7488ae429d90208de0481394e35d24cef32f \
 get_src a92c9ee6682567605ece55d4eed5d1d54446ba6fba748cff0a2482aea5713d5f \
         "https://github.com/openresty/lua-upstream-nginx-module/archive/$LUA_UPSTREAM_VERSION.tar.gz" "lua-upstream-nginx-module"
 
-get_src 77bbcbb24c3c78f51560017288f3118d995fe71240aa379f5818ff6b166712ff \
-        "https://github.com/openresty/luajit2/archive/$LUAJIT_VERSION.tar.gz" "luajit2"
+get_src 9b32bc46f1c6222d5dd605dd6d632ba2e0c740b825684920df30a4c09bf326ea \
+        "https://github.com/loongson/luajit2/archive/refs/tags/v2.1-20250529-loongarch64.tar.gz" "luajit2"
 
 get_src b6c9c09fd43eb34a71e706ad780b2ead26549a9a9f59280fe558f5b7b980b7c6 \
         "https://github.com/leev/ngx_http_geoip2_module/archive/$GEOIP2_VERSION.tar.gz" "ngx_http_geoip2_module"
@@ -282,6 +292,15 @@ get_src 0fb790e394510e73fdba1492e576aaec0b8ee9ef08e3e821ce253a07719cf7ea \
 get_src d74f86ada2329016068bc5a243268f1f555edd620b6a7d6ce89295e7d6cf18da \
         "https://github.com/microsoft/mimalloc/archive/${MIMALOC_VERSION}.tar.gz" "mimalloc"
 
+# 为 /tmp/build/ModSecurity-nginx 和 /tmp/build/open-telemetry 添加补丁
+pushd /tmp/build/ModSecurity-nginx
+    patch -p1 < /third_patches/ModSecurity-nginx-1.0.3.patch
+popd
+
+pushd /tmp/build/opentelemetry-cpp
+    patch -p1 < /third_patches/opentelemetry-cpp-1.11.0.patch
+popd
+
 # improve compilation times
 CORES=$(($(grep -c ^processor /proc/cpuinfo) - 1))
 
@@ -297,7 +316,9 @@ cd "$BUILD_PATH/luajit2"
 make CCDEBUG=-g
 make install
 
+rm -rf /usr/local/bin/lua
 ln -s /usr/local/bin/luajit /usr/local/bin/lua
+rm -rf /usr/local/include/lua
 ln -s "$LUAJIT_INC" /usr/local/include/lua
 
 cd "$BUILD_PATH/opentelemetry-cpp"
@@ -327,7 +348,9 @@ git config --global --add core.compression -1
 
 # Get Brotli source and deps
 cd "$BUILD_PATH"
-git clone --depth=100 https://github.com/google/ngx_brotli.git
+if ! test -d "ngx_brotli";then
+  git clone --depth=100 https://github.com/google/ngx_brotli.git
+fi
 cd ngx_brotli
 # https://github.com/google/ngx_brotli/issues/156
 git reset --hard 63ca02abdcf79c9e788d2eedcc388d2335902e52
@@ -335,7 +358,9 @@ git submodule init
 git submodule update
 
 cd "$BUILD_PATH"
-git clone --depth=1 https://github.com/ssdeep-project/ssdeep
+if ! test -d "ssdeep";then
+  git clone --depth=1 https://github.com/ssdeep-project/ssdeep
+fi
 cd ssdeep/
 
 ./bootstrap
@@ -346,7 +371,9 @@ make install
 
 # build modsecurity library
 cd "$BUILD_PATH"
-git clone -n https://github.com/SpiderLabs/ModSecurity
+if ! test -d "ModSecurity";then
+  git clone -n https://github.com/SpiderLabs/ModSecurity
+fi
 cd ModSecurity/
 git checkout $MODSECURITY_LIB_VERSION
 git submodule init
@@ -379,6 +406,7 @@ echo "SecAuditLogStorageDir /var/log/audit/" >> /etc/nginx/modsecurity/modsecuri
 # Download owasp modsecurity crs
 cd /etc/nginx/
 
+rm -rf coreruleset owasp-modsecurity-crs
 git clone -b $OWASP_MODSECURITY_CRS_VERSION https://github.com/coreruleset/coreruleset
 mv coreruleset owasp-modsecurity-crs
 cd owasp-modsecurity-crs
@@ -489,6 +517,7 @@ WITH_MODULES=" \
   --add-dynamic-module=$BUILD_PATH/ngx_http_geoip2_module \
   --add-dynamic-module=$BUILD_PATH/ngx_brotli"
 
+
 ./configure \
   --prefix=/usr/local/nginx \
   --conf-path=/etc/nginx/nginx.conf \
@@ -553,6 +582,7 @@ make all
 make install
 
 export LUA_INCLUDE_DIR=/usr/local/include/luajit-2.1
+rm -rf /usr/include/lua5.1
 ln -s $LUA_INCLUDE_DIR /usr/include/lua5.1
 
 cd "$BUILD_PATH/lua-cjson"
@@ -618,7 +648,7 @@ adduser -S -D -H -u 101 -h /usr/local/nginx -s /sbin/nologin -G www-data -g www-
 
 for dir in "${writeDirs[@]}"; do
   mkdir -p ${dir};
-  chown -R www-data.www-data ${dir};
+  chown -R www-data:www-data ${dir};
 done
 
 rm -rf /etc/nginx/owasp-modsecurity-crs/.git

@@ -1,0 +1,18 @@
+diff --git a/config b/config
+index c6e7467..c496ee2 100644
+--- a/config
++++ b/config
+@@ -8,9 +8,12 @@
+ # $YAJL_LIB variable may need to be populated in case of non-standard
+ # path of libyajl.so's installation
+ 
++set -x;
++
+ ngx_feature_name=
+ ngx_feature_run=no
+-ngx_feature_incs="#include <modsecurity/modsecurity.h>"
++ngx_feature_incs="#include <stdio.h>
++#include <modsecurity/modsecurity.h>"
+ ngx_feature_libs="-lmodsecurity"
+ ngx_feature_test='printf("hello");'
+ ngx_modsecurity_opt_I=

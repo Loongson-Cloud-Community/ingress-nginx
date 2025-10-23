@@ -24,7 +24,7 @@ INIT_BUILDX=$(DIR)/../../hack/init-buildx.sh
 SHORT_SHA ?=$(shell git rev-parse --short HEAD)
 TAG ?=$(shell cat TAG)
 
-REGISTRY ?= gcr.io/k8s-staging-ingress-nginx
+REGISTRY ?= lcr.loongnix.cn/ingress-nginx
 
 IMAGE = $(REGISTRY)/nginx-1.25
 

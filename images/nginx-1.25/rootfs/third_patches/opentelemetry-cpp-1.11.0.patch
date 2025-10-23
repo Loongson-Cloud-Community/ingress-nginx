@@ -1,0 +1,13 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index dcf1034..61fb97b 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -60,6 +60,8 @@ else()
+     set(ARCH arm64)
+   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(arm.*|ARM.*)")
+     set(ARCH arm)
++  elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(loongarch64.*|LOONGARCH64.*)")
++    set(ARCH loong64)
+   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)64le")
+     set(ARCH ppc64le)
+   elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^(powerpc|ppc)64")
