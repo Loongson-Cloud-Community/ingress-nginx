@@ -74,6 +74,12 @@ ExternalProject_Add(
   GIT_TAG ${GRPC_GIT_TAG}
   GIT_SHALLOW 1
   UPDATE_COMMAND ""
+  PATCH_COMMAND
+    ${CMAKE_COMMAND} -E echo "Applying patches to gRPC submodules..." &&
+    ${CMAKE_COMMAND} -E chdir /tmp/build/grpc/subs/Source/gRPC/third_party/abseil-cpp
+      patch -p1 < /opt/third_party/patches/absl-fix.patch &&
+    ${CMAKE_COMMAND} -E chdir /tmp/build/grpc/subs/Source/gRPC/third_party/re2
+      patch -p1 < /opt/third_party/patches/re2-fix.patch
   CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${STAGED_INSTALL_PREFIX}
              -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
              -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}

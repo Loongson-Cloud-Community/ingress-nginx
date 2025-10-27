@@ -1,0 +1,15 @@
+diff --git a/absl/base/internal/direct_mmap.h b/absl/base/internal/direct_mmap.h
+index e492bb00..0e7744f7 100644
+--- a/absl/base/internal/direct_mmap.h
++++ b/absl/base/internal/direct_mmap.h
+@@ -25,7 +25,9 @@
+ #include <sys/mman.h>
+ 
+ #ifdef __linux__
+-
++#ifndef _LARGEFILE64_SOURCE
++#define _LARGEFILE64_SOURCE
++#endif
+ #include <sys/types.h>
+ #ifdef __BIONIC__
+ #include <sys/syscall.h>

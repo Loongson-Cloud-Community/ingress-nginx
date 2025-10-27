@@ -1,0 +1,12 @@
+diff --git a/util/pcre.h b/util/pcre.h
+index 896b0bd..7c90145 100644
+--- a/util/pcre.h
++++ b/util/pcre.h
+@@ -163,6 +163,7 @@
+ 
+ #include "util/util.h"
+ #include "re2/stringpiece.h"
++#include <stdint.h>
+ 
+ #ifdef USEPCRE
+ #include <pcre.h>

@@ -62,7 +62,10 @@ prepare()
     pcre-dev \
     curl \
     git \
-    build-base
+    build-base \
+    cmake \
+    ninja \
+    make
 }
 
 install_grpc()
@@ -89,6 +92,7 @@ install_otel()
   git clone --recurse-submodules -j ${CORES} --depth=1 -b \
     ${OPENTELEMETRY_CPP_VERSION} https://github.com/open-telemetry/opentelemetry-cpp.git opentelemetry-cpp-${OPENTELEMETRY_CPP_VERSION}
   cd "opentelemetry-cpp-${OPENTELEMETRY_CPP_VERSION}"
+  git apply /opt/third_party/patches/otel_opentelemetry-cpp.patch
   mkdir -p .build
   cd .build
 

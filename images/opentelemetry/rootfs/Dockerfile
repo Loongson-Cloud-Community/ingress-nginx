@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-FROM alpine:3.18.2 as base
+FROM lcr.loongnix.cn/library/alpine:3.21 as base
 
 RUN mkdir -p /opt/third_party/install
 COPY . /opt/third_party/
@@ -41,7 +41,7 @@ COPY --from=grpc /opt/third_party/install/ /usr
 COPY --from=otel-cpp /opt/third_party/install/ /usr
 RUN bash /opt/third_party/build.sh -n
 
-FROM cgr.dev/chainguard/go:latest as build-init
+FROM lcr.loongnix.cn/library/golang:1.22-alpine as build-init
 
 WORKDIR /go/src/app
 COPY . .
@@ -49,7 +49,7 @@ COPY . .
 RUN go mod download
 RUN CGO_ENABLED=0 go build -o /go/bin/init_module
 
-FROM cgr.dev/chainguard/static as final
+FROM lcr.loongnix.cn/library/alpine:3.21 as final
 COPY --from=build-init /go/bin/init_module /
 COPY --from=nginx /etc/nginx/modules /etc/nginx/modules
 COPY --from=nginx /opt/third_party/install/lib /etc/nginx/modules
