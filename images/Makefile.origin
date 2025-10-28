@@ -51,7 +51,7 @@ ifndef NAME
 	$(error NAME variable is required)
 endif
 
-build: precheck
+build: precheck ensure-buildx
 	docker buildx build \
 		--label=org.opencontainers.image.source=https://github.com/kubernetes/ingress-nginx \
 		--label=org.opencontainers.image.licenses=Apache-2.0 \
